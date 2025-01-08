@@ -1,0 +1,64 @@
+sbs
+
+distance(...) method of builtins.PyCapsule instance
+        distance(arg0: sbs.space_object, arg1: sbs.space_object) -> float
+
+        returns the distance between two space objects; arguments are two spaceObjects
+
+    distance_between_navpoints(...) method of builtins.PyCapsule instance
+        distance_between_navpoints(arg0: str, arg1: str) -> float
+
+        returns the distance between two nav points; navpoints by name
+
+    distance_id(...) method of builtins.PyCapsule instance
+        distance_id(arg0: int, arg1: int) -> float
+
+        returns the distance between two space objects; arguments are two IDs
+
+    distance_point_line(...) method of builtins.PyCapsule instance
+        distance_point_line(arg0: sbs.vec3, arg1: sbs.vec3, arg2: sbs.vec3) -> tuple
+
+        calulates the distance from a point to a line, for checking potential collisions. Returns a tuple, containing: distance to collision pt along line; distance from line start to point; tangent (positive == in front
+
+    distance_to_navpoint(...) method of builtins.PyCapsule instance
+        distance_to_navpoint(arg0: str, arg1: int) -> float
+
+        returns the distance between a nav point and a space object; navpoint name, then object ID
+
+broad_test(...) method of builtins.PyCapsule instance
+    broad_test(arg0: float, arg1: float, arg2: float, arg3: float, arg4: int) -> List[sbs.space_object]
+
+    return a list of space objects that are currently inside an x/z 2d rect  ARGS: 2D bounding rect, and type value (0, 1, or 2, -1 = all)
+
+class space_object(pybind11_builtins.pybind11_object)
+     |  Method resolution order:
+     |      space_object
+     |      pybind11_builtins.pybind11_object
+     |      builtins.object
+     |
+     |  Methods defined here:
+     |
+     |  __init__(self, /, *args, **kwargs)
+     |      Initialize self.  See help(type(self)) for accurate signature.
+     |
+     |  forward_vector(...)
+     |      forward_vector(self: sbs.space_object) -> sbs.vec3
+     |
+     |      returns a vec3, a vector direction, related to which way the space object is oriented
+     |
+     |  right_vector(...)
+     |      right_vector(self: sbs.space_object) -> sbs.vec3
+     |
+     |      returns a vec3, a vector direction, related to which way the space object is oriented
+     |
+     |  set_behavior(...)
+     |      set_behavior(self: sbs.space_object, arg0: str) -> None
+     |
+     |      set name of behavior module
+     |      current available behavior modules : nebula, npcship, asteroid, playership, station
+     |
+     |  up_vector(...)
+     |      up_vector(self: sbs.space_object) -> sbs.vec3
+     |
+     |      returns a vec3, a vector direction, related to which way the space object is oriented
+     |

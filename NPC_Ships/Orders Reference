@@ -1,0 +1,22 @@
+AI Orders Reference
+
+Task Key Words:
+    Attack
+    Defend
+    -Mining
+    -Move to
+    -Transport
+
+Viable Target types:
+    Side value
+    Tags from database
+        ship, station, hegemony, light, medium, heavy, combat, carrier, fighter, support, civilian
+
+Parameters:
+    Sensor Range (int) - how far to scan for targets
+    Command Radius (int) - how far I will scan for other ships who I can command, or be commanded by (formation check distance)
+    Fleet Separation (int) - how far I will move away from the commander in my fleet
+    Max Distance (int) -
+    Location (list) - the locations I will go to (defined places or coordinates)
+        object location
+        coordinate list (including single coordinate location)
