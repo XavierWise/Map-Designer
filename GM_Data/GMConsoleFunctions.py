@@ -484,6 +484,8 @@ class GMPanelTypes:
             GMSelectionPanels.NPCSelection(panelID, clientObj, position, wh, pageNo, data)
         elif data.get("Type") == "Player Shuttle":
             GMSelectionPanels.ShuttleSelection(panelID, clientObj, position, wh, pageNo, data)
+        elif data.get("Type") == "Jump Point":
+            GMSelectionPanels.JumpNodeSelection(panelID, clientObj, position, wh, pageNo, data)
 
     @staticmethod
     def MainPanel(panelID, panelName, clientObj, position, wh, pageNo, data): # main panel functions
@@ -1012,9 +1014,13 @@ class GMSelectionPanels: #the panels displayed when a GM selects an object
             match int(pageNo):
                 case 1:
                     output = ""
+                    coreData = data.get("Object Data")
+                    sbs.send_gui_text(clientObj.clientID, "", f"{panelID}-JumpDriftHeader", f"text: Drift Distance = {coreData.get('Drift')}; font: gui-1", xpos + 1, ypos + 8, xpos + w - 1, ypos + 10)
+                    sbs.send_gui_slider(clientObj.clientID, "", f"{panelID}-JumpDrift", int(coreData.get('Drift')), "low: 0; high: 40000", xpos + 1, ypos + 10, xpos + w - 1, ypos + 13)
                     sbs.send_gui_text(clientObj.clientID, "", f"{panelID}-renameHeader", f"color: white; font: gui-1; text:Rename Gate; justify: left", xpos + 1, ypos + 37, xpos + w - 1, ypos + 40)
                     sbs.send_gui_typein(clientObj.clientID, "", f"{panelID}-renameText", f"text: {PointRename}", xpos + 1, ypos + 40, xpos + w - 1, ypos + 43)
                     sbs.send_gui_button(clientObj.clientID, "", f"{panelID}-renameSet", f"text: Set; font: gui-1", xpos + w - 5, ypos + 43, xpos + w - 1, ypos + 46)
+                    sbs.send_gui_dropdown(clientObj.clientID, "", f"{panelID}-JumpState", f"text: {coreData.get('State')}; font: gui-1; list:Tethered, Untethered", xpos + 1, ypos + 15, xpos + w - 1, ypos + 18)
 
                 case _:
                         pass
@@ -1149,6 +1155,7 @@ class PanelTriggers:
         PanelTriggers.CargoManagement(event, data)
         PanelTriggers.PersonnelManagement(event, data)
         PanelTriggers.AIConfig(event, data)
+        PanelTriggers.JumpGateConfig(event, data)
 
     @staticmethod
     def AIConfig(event, data):
@@ -1460,6 +1467,26 @@ class PanelTriggers:
                     if shipID in SpaceObjects.activeShips.keys():
                         ship.updateclientConsoles()
             sbs_tools.crenderID(event.client_id, ClientNEW.activeClients, "")
+
+    @staticmethod
+    def JumpGateConfig(event, data):
+        subtagdata = event.sub_tag.split("-")
+        if "-JumpDrift" in event.sub_tag:
+            shipID = data.get("ID")
+            ship = SpaceObjects.activeJumpPoints.get(shipID)
+            ship.drift = int(event.sub_float)
+            panelname = data.get("Object Data")
+            panelname.update({'Drift': ship.drift})
+            sbs_tools.crenderID(event.client_id, ClientNEW.activeClients, "")
+            return True
+        if "-JumpState" in event.sub_tag:
+            shipID = data.get("ID")
+            ship = SpaceObjects.activeJumpPoints.get(shipID)
+            ship.ObjectData.set('state', event.value_tag, 0)
+            panelname = data.get("Object Data")
+            panelname.update({'State': event.value_tag})
+            sbs_tools.crenderID(event.client_id, ClientNEW.activeClients, "")
+            return True
 
     @staticmethod
     def FleetSpawn(event, data):

@@ -15,7 +15,7 @@ minefields = {}
 
 
 def systemlist():
-    path = os.getcwd() + "\data\missions\TSN Cosmos\Terrain\\"
+    path = os.getcwd() + "\data\missions\Map Designer\Terrain\\"
     systems = set()
     for root, dirs, files in os.walk(path):
         for file in files:
@@ -28,6 +28,7 @@ def systemlist():
 def compileSystemInformation():
     allsystems = {}
     for systemname in systemlist():
+        print(systemname)
         with open(tools.find(f"{systemname}.json", os.getcwd()), "r") as systemdatafile:
             systemdata = hjson.load(systemdatafile)
             alignment = systemdata.get("systemalignment")
@@ -250,3 +251,11 @@ def saveData(systemName):
     with open(tools.find(f"{systemName}.json", os.getcwd()), "w") as file:
         file.write(hjson.dumpsJSON({"systemMapCoord": simulation.systemMapCoord, "systemalignment": simulation.systemAlignment, "objects": objectlist, "terrain": terrainlist}, separators=(",", ":"), indent=5))
 
+
+def createSystem(systemName):
+    objectlist = compileObjectList()
+    terrainlist = compileTerrainList()
+    path = os.getcwd() + f"\data\missions\Map Designer\Terrain\\{systemName}.json"
+    with open(path, "w") as file:
+        file.write(hjson.dumpsJSON(
+            {"systemMapCoord": simulation.systemMapCoord, "systemalignment": simulation.systemAlignment, "objects": objectlist, "terrain": terrainlist}, separators=(",", ":"), indent=5))

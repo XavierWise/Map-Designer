@@ -27,12 +27,20 @@ class Server:
         self.myMenu = ClientMenusNEW.MapDesignerMenu(self)
         sbs_tools.mrender(self, "")
         self.ListPosition = 0
+        self.newsystemName = ""
 
     def clientMonitors(self, event):
         if "load-system" in event.sub_tag:
             simulation.HandleSimulationStart()
         if "save-system" in event.sub_tag:
             TerrainHandling.saveData(simulation.startSystem)
+        if "name-new-system" in event.sub_tag:
+            self.newsystemName = event.value_tag
+            sbs_tools.mrender(self, "")
+        if "create-system" in event.sub_tag:
+            simulation.startSystem = self.newsystemName
+            TerrainHandling.createSystem(simulation.startSystem)
+            simulation.HandleSimulationStart()
 
 
 class Client:

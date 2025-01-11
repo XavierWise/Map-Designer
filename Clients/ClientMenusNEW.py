@@ -61,8 +61,6 @@ class MapDesignerMenu:
             simulation.startSystem = systemname
             sbs_tools.mrender(self.clientObj, "")
 
-
-
     def menuRender(self):
         self.menuMainOptions()
         #send the footer displaying the available submenus
