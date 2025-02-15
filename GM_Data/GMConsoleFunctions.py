@@ -1272,7 +1272,6 @@ class PanelTriggers:
                     fieldIDList.append(newAsteroid)
                 data.update({"fieldIDList": fieldIDList})
                 TerrainHandling.asteroidfields.update({id(coordList): data})
-                return True
             elif data.get("type") == "nebula":
                 for coordinate in coordList:
                     newNebula = TerrainTypes.AddNebula(simulation.simul, "nebula", coordinate)
@@ -1283,7 +1282,9 @@ class PanelTriggers:
                     NebulaData.set("FieldID", id(coordList), 0)
                 data.update({"fieldIDList": fieldIDList})
                 TerrainHandling.nebulafields.update({id(coordList): data})
-                return True
+            TerrainHandling.createSensorMarker(id, data.get("start"))
+            TerrainHandling.createSensorMarker(id, data.get("end"))
+            return True
 
 
     @staticmethod
@@ -1302,6 +1303,11 @@ class PanelTriggers:
                     TerrainHandling.nebulaIDs.remove(objID)
                     sbs.delete_object(objID)
                 TerrainHandling.nebulafields.pop(data.get("FieldID"))
+            for markerObj in TerrainHandling.sensorMarkers:
+                markerData = markerObj.data_set
+                if markerData.get("fieldID", 0) == data.get("FieldID"):
+                    sbs.delete_object(markerObj.unique_ID)
+
             return True
 
     @staticmethod

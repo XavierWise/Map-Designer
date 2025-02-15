@@ -12,6 +12,7 @@ nebulaIDs = []
 asteroidfields = {}
 nebulafields = {}
 minefields = {}
+sensorMarkers = []
 
 
 def systemlist():
@@ -122,16 +123,18 @@ def generateTerrain(sim, terrainlist):
                     NebulaData.set("FieldID", id, 0)
                 data.update({"fieldIDList": fieldIDList})
                 nebulafields.update({id: data})
-            createSensorMarker(data.get("start"))
-            createSensorMarker(data.get("end"))
+            createSensorMarker(id, data.get("start"))
+            createSensorMarker(id, data.get("end"))
 
 
-def createSensorMarker(coord):
+def createSensorMarker(fieldID, coord):
     marker = simulation.simul.create_space_object("behav_sensormarker", "generic-cylinder", 0xfff0)
     markerObj = simulation.simul.get_space_object(marker)
     markerData = markerObj.data_set
     markerData.set("local_scale_coeff", 0.1, 0)
+    markerData.set("fieldID", fieldID, 0)
     simulation.simul.reposition_space_object(markerObj, coord[0], coord[1], coord[2])
+    sensorMarkers.append(markerObj)
     for GMID, GMObj in SpaceObjects.activeGameMasters.items():
         index = GMObj.ObjectData.get("num_extra_scan_sources", 0)
         GMObj.ObjectData.set("extra_scan_source", marker, index)
@@ -192,6 +195,8 @@ def clearTerrain():
         deleteList.append(minefields.get(minefieldID))
     for minefield in deleteList:
         del minefield
+    for markerObj in sensorMarkers:
+        sbs.delete_object(markerObj.unique_ID)
     minefields = {}
 
 
@@ -287,6 +292,7 @@ def saveData(systemName):
 
 
 def createSystem(systemName):
+    clearTerrain()
     objectlist = compileObjectList()
     terrainlist = compileTerrainList()
     path = os.getcwd() + f"\data\missions\Map Designer\Terrain\\{systemName}.json"
