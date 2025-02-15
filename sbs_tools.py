@@ -13,12 +13,6 @@ def PrintEvents(event):
     print("Extra-Extra Tag: " + str(event.extra_extra_tag))
 
 
-def resCon(percentagesize, standardisedres, currentres):
-    decimal = percentagesize/100
-    newpercentage = ((standardisedres * decimal)/currentres) * 100
-    return newpercentage
-
-
 def AddNavPoint(sim, name, position, **kwargs):
     if "colour" in kwargs:
         colour = kwargs.get("colour")
@@ -35,36 +29,6 @@ def AddNavPoint(sim, name, position, **kwargs):
     elif "objectID" in kwargs:
         navpoint.visibleToShip = kwargs.get("objectID")
     return navpointID
-
-
-class timer:
-    def __init__(self, time):
-        self.time = time
-        self.timer = False
-        self.end = 0
-
-    def countdownSecs(self, cur_tick):
-        if self.timer == False:
-            self.end = cur_tick + 30 * self.time
-            self.timer = True
-        if self.timer and cur_tick <= self.end:
-            pass
-        else:
-            self.timer = "Done"
-        return self.timer
-
-    def countdownMins(self, cur_tick):
-        if self.timer == False:
-            self.end = cur_tick + 60 * self.time
-            self.timer = True
-        if self.timer and cur_tick <= self.end:
-            pass
-        else:
-            self.timer = "Done"
-        return self.timer
-
-    def deletetimerobj(self):
-        del self
 
 
 def crender(clientObj, tag):
@@ -93,46 +57,7 @@ def mrenderID(clientID, clientDict, tag):
     sbs.send_gui_complete(clientID, tag)
 
 
-def clearComms(ship):
-    sbs.send_comms_selection_info(ship, "", "#00FFFF", "")
-
-
-def tagrender(clientObj, tag):
-    pass
-
-
 def find(name, path):
     for root, dirs, files in os.walk(path):
         if name in files:
             return os.path.join(root, name)
-
-
-testData = {"TH30": {
-                "NavPoint": True,
-                "Signature": "Tharium Radiation",
-                "Strength": 250,
-                "Analysis": "Emissions indicative of Kralien technology. "
-                "Consistent wave strength and pattern suggests thrust output from engine exhausts."},
-            "DBR51": {
-                "NavPoint": True,
-                "Signature": "Debris field",
-                "Strength": 250,
-                "Analysis": "Composite signature indicative of Torgoth hull plating."},
-            "TRA90": {
-                "NavPoint": True,
-                "Signature": "Gredian Signature",
-                "Strength": 943,
-                "Analysis": "Asteroid sweep indicates trace elements of gredian compounds."},
-            "TRN11": {
-                "NavPoint": True,
-                "Signature": "Filum gas compunds",
-                "Strength": 250,
-                "Analysis": "Gaseous particles, indicating Filum nebula. Highly volitile and disruptive "
-                            "to shield systems and warp bubble stability."},
-            "JP43": {
-                "NavPoint": True,
-                "Signature": "Omega Jump point",
-                "Strength": 250,
-                "Analysis": "Class Omega jump point. Drift radius estimated at 10000. Origin unknown. "
-                            "Records indicate no known plotting within USFP databases."},
-            }

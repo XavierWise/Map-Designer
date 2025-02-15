@@ -19,6 +19,9 @@ def StartScript(sim):
         sbs.create_new_sim()
         sbs.resume_sim()
         simulation.simul = sim
+        for client in sbs.get_client_ID_list():
+            ClientNEW.setupClient(client)
+        simulation.HandleSimulationStart()
 
 
 def cosmos_event_handler(sim, event):

@@ -5,7 +5,7 @@ from NPC_Ships import AI_Commanders, fleetOrders
 import sbs_tools, tsn_databases
 from Clients import ClientNEW
 from Clients import Console_GUI as GUI
-
+from Terrain import TerrainHandling, TerrainTypes
 
 #icon bar at the top, that can display different options for which panels to display
 class IconBar:
@@ -224,6 +224,20 @@ class FunctionsPanel(Panel):
             self.paneldata = {
                 "ScrollPos": 0
             }
+        if self.name == "Terrain":
+            self.paneldata = {
+                "Terrain": True,
+                "StartEndPoint": "",
+                "scatter": 1000,
+                "density": 1,
+                "type": "asteroids",
+                "composition": ["Ast. Std Rand"],
+                "start": (0, 0, 0),
+                "end": (0, 0, 0),
+                "SNavID": -1,
+                "ENavID": -1
+
+            }
 
     def Triggers(self, event):
         # these triggers are for the individual console functions, as well as the triggers for the console type
@@ -439,6 +453,23 @@ class SelectionPanel(Panel):
                               }
                          })
             return data
+        elif selectedID in TerrainHandling.asteroidIDs + TerrainHandling.nebulaIDs:
+            Object = simulation.simul.get_space_object(selectedID)
+            ObjData = Object.data_set
+            FieldID = ObjData.get("FieldID", 0)
+            FieldData = {}
+            print(Object.tick_type)
+            if Object.tick_type == "behav_asteroid":
+                FieldData = TerrainHandling.asteroidfields.get(FieldID)
+            elif Object.tick_type == "behav_nebula":
+                FieldData = TerrainHandling.nebulafields.get(FieldID)
+            print(FieldData)
+            data.update({"Type": "Terrain",
+                         "FieldID": FieldID,
+                         "FieldData": FieldData,
+                         "ObjID": selectedID,
+                         "ObjData": ObjData})
+            return data
         else:
             self.state = "collapsed"
             self.active = False
@@ -486,6 +517,8 @@ class GMPanelTypes:
             GMSelectionPanels.ShuttleSelection(panelID, clientObj, position, wh, pageNo, data)
         elif data.get("Type") == "Jump Point":
             GMSelectionPanels.JumpNodeSelection(panelID, clientObj, position, wh, pageNo, data)
+        elif data.get("Type") == "Terrain":
+            GMSelectionPanels.TerrainSelection(panelID, clientObj, position, wh, pageNo, data)
 
     @staticmethod
     def MainPanel(panelID, panelName, clientObj, position, wh, pageNo, data): # main panel functions
@@ -654,7 +687,39 @@ class GMPanelTypes:
             #single or field
             #density of field
             case _:
-                pass
+                startendpoint = data.get("StartEndPoint")
+                xpos += 1
+                ypos += 5
+                colour1 = "#ff3300"
+                colour2 = "#ff3300"
+                if startendpoint == "StartPoint":
+                    colour1 = "#006600"
+                elif startendpoint == "EndPoint":
+                    colour2 = "#006600"
+                GUI.ToggleButton(clientObj.clientID, "", f"{panelID}-StartPoint", xpos + 0.5, ypos, 9.5, 3, text="Start", togglecolour=colour1, font="smallest")
+                xpos += 10
+                GUI.ToggleButton(clientObj.clientID, "", f"{panelID}-EndPoint", xpos + 0.5, ypos, 9.5, 3, text="End", togglecolour=colour2, font="smallest")
+                xpos += 11
+                terrainList = "nebula^asteroids"
+                selectedTerrain = data.get("type")
+                sbs.send_gui_dropdown(clientObj.clientID, "", f"{panelID}-TerrainType", f"text: Terrain Type; font: gui-1; list:{terrainList}", xpos, ypos, xpos + 10, ypos + 3)
+
+                xpos = position[0] + 1
+                ypos += 5
+                sbs.send_gui_text(clientObj.clientID, "", f"{panelID}-terrainTitle", f"text:Selected Terrain - {selectedTerrain}; font: gui-1", xpos, ypos, xpos + 30, ypos + 3)
+                scatter = data.get("scatter")
+                ypos += 5
+                sbs.send_gui_text(clientObj.clientID, "", f"{panelID}-scatterTitle", f"text:Scatter {scatter}; font: gui-1", xpos, ypos, xpos + 30, ypos + 3)
+                ypos += 3
+                sbs.send_gui_slider(clientObj.clientID, "", f"{panelID}-scatter", scatter, "low:1000; high: 10000", xpos, ypos, xpos + 30, ypos + 3)
+                density = data.get("density")
+                ypos += 5
+                sbs.send_gui_text(clientObj.clientID, "", f"{panelID}-densityTitle", f"text:Density {density}; font: gui-1", xpos, ypos, xpos + 30, ypos + 3)
+                ypos += 3
+                sbs.send_gui_slider(clientObj.clientID, "", f"{panelID}-density", density, "low:1; high: 1000", xpos, ypos, xpos + 30, ypos + 3)
+                xpos += 20
+                ypos += 5
+                GUI.ToggleButton(clientObj.clientID, "", f"{panelID}-CreateTerrain", xpos + 0.5, ypos, 9.5, 3, text="Generate", togglecolour="green", font="smallest")
 
     @staticmethod
     def StationSpawnPanel(panelID, panelName, clientObj, position, wh, pageNo, data):
@@ -998,7 +1063,6 @@ class GMSelectionPanels: #the panels displayed when a GM selects an object
         else:
             GUI.textBox(clientObj.clientID, "", f"{panelID}-NoData", xpos, ypos + 3, w / 2, 10, text="No Data", header="Selection", headingfont="gui-1", font="smallest")
 
-
     @staticmethod
     def JumpNodeSelection(panelID, clientObj, position, wh, pageNo, data):
         xpos = position[0]
@@ -1093,13 +1157,152 @@ class GMSelectionPanels: #the panels displayed when a GM selects an object
             GUI.IconButton(clientObj.clientID, "", f"{panelID}-personnelSelection-deploy-{data.get('ID')}-{teamID}", xpos + 19, ypos, iconsize=4, icon=93, iconcolour="orange")
             ypos += 5.1
 
+    @staticmethod
+    def TerrainSelection(panelID, clientObj, position, wh, pageNo, data):
+        xpos = position[0]
+        ypos = position[1] + 1
+        w = wh[0]
+        h = wh[1]
+        match int(pageNo):
+            case 1:
+                output = ""
+                height = 6
+                sbs.send_gui_text(clientObj.clientID, "", f"{panelID}-fieldID", f"text: Field ID - {data.get('FieldID')}; font: gui-1", xpos + 5, ypos + 5, xpos + w, ypos + 10)
+                startendpoint = data.get("StartEndPoint")
+                """xpos += 1
+                ypos += 5
+                if startendpoint == "StartPoint":
+                    colour1 = "#006600"
+                    colour2 = "#ff3300"
+                else:
+                    colour1 = "#ff3300"
+                    colour2 = "#006600"
+                GUI.ToggleButton(clientObj.clientID, "", f"{panelID}-StartPoint", xpos + 0.5, ypos, 9.5, 3,
+                                 text="Start", togglecolour=colour1, font="smallest")
+                xpos += 10
+                GUI.ToggleButton(clientObj.clientID, "", f"{panelID}-EndPoint", xpos + 0.5, ypos, 9.5, 3, text="End",
+                                 togglecolour=colour2, font="smallest")
+                xpos += 11
+                terrainList = "Nebulae^Asteroids"
+                selectedTerrain = data.get("TerrainType")
+                sbs.send_gui_dropdown(clientObj.clientID, "", f"{panelID}-TerrainType",
+                                      f"text: Terrain Type; font: gui-1; list:{terrainList}", xpos, ypos, xpos + 10,
+                                      ypos + 3)
+
+                xpos = position[0] + 1
+                ypos += 5
+                sbs.send_gui_text(clientObj.clientID, "", f"{panelID}-terrainTitle",
+                                  f"text:Selected Terrain - {selectedTerrain}; font: gui-1", xpos, ypos, xpos + 30,
+                                  ypos + 3)
+                scatter = data.get("Scatter")
+                ypos += 5
+                sbs.send_gui_text(clientObj.clientID, "", f"{panelID}-scatterTitle",
+                                  f"text:Scatter {scatter}; font: gui-1", xpos, ypos, xpos + 30, ypos + 3)
+                ypos += 3
+                sbs.send_gui_slider(clientObj.clientID, "", f"{panelID}-scatter", scatter, "low:1000; high: 10000",
+                                    xpos, ypos, xpos + 30, ypos + 3)
+                density = data.get("Density")
+                ypos += 5
+                sbs.send_gui_text(clientObj.clientID, "", f"{panelID}-densityTitle",
+                                  f"text:Density {density}; font: gui-1", xpos, ypos, xpos + 30, ypos + 3)
+                ypos += 3
+                sbs.send_gui_slider(clientObj.clientID, "", f"{panelID}-density", density, "low:1; high: 1000", xpos,
+                                    ypos, xpos + 30, ypos + 3)
+                xpos += 20
+                ypos += 5
+                GUI.ToggleButton(clientObj.clientID, "", f"{panelID}-CreateTerrain", xpos + 0.5, ypos, 9.5, 3,
+                                 text="Generate", togglecolour="green", font="smallest")"""
+
+                sbs.send_gui_button(clientObj.clientID, "", f"{panelID}-rebuildField", f"text: Rebuild; font: gui-1", xpos + w - 15, ypos + 43, xpos + w - 1, ypos + 46)
+                sbs.send_gui_button(clientObj.clientID, "", f"{panelID}-deleteField", f"text: Delete Field; font: gui-1", xpos + w - 15, ypos + 48, xpos + w - 1, ypos + 51)
+            case 2:
+                pass
+
 
 #triggers linked to the displayed panels
 class PanelTriggers:
 
     @staticmethod
     def Terrain(event, data):
-        pass
+        if "StartPoint" in event.sub_tag:
+            data.update({"StartEndPoint": "StartPoint"})
+            #sbs_tools.crenderID(event.client_id, ClientNEW.activeClients, "")
+            return True
+        if "EndPoint" in event.sub_tag:
+            data.update({"StartEndPoint": "EndPoint"})
+            #sbs_tools.crenderID(event.client_id, ClientNEW.activeClients, "")
+            return True
+        if "-scatter" in event.sub_tag:
+            data.update({"scatter": round(event.sub_float)})
+            #sbs_tools.crenderID(event.client_id, ClientNEW.activeClients, "")
+            return True
+        if "-density" in event.sub_tag:
+            data.update({"density": round(event.sub_float)})
+            #sbs_tools.crenderID(event.client_id, ClientNEW.activeClients, "")
+            return True
+        if "-TerrainType" in event.sub_tag:
+            data.update({"type": event.value_tag})
+            if event.value_tag == "asteroids":
+                data.update({"composition": ["Ast. Std Rand"]})
+            if event.value_tag == "nebula":
+                data.update({"composition": []})
+            #sbs_tools.crenderID(event.client_id, ClientNEW.activeClients, "")
+            return True
+        if "-CreateTerrain" in event.sub_tag:
+            start = data.get("start")
+            end = data.get("end")
+            density = data.get("density")
+            scatter = data.get("scatter")
+            simulation.simul.delete_navpoint_by_id(data.get("SNavID"))
+            simulation.simul.delete_navpoint_by_id(data.get("ENavID"))
+            coordList = TerrainHandling.generateLineCoords(2010, start, end, density, scatter, 0)
+            fieldIDList = []
+            if data.get("type") == "asteroids":
+                choiceList = []
+                for coordinate in coordList:
+                    asteroidTypeList = data.get("composition")
+                    for asteroidType in asteroidTypeList:
+                        choiceList += tsn_databases.terrainDatabase.get(asteroidType)
+                    ast = random.choice(choiceList)
+                    newAsteroid = TerrainTypes.AddAsteroid(simulation.simul, ast, coordinate)
+                    TerrainHandling.asteroidIDs.append(newAsteroid)
+                    AsteroidObj = simulation.simul.get_space_object(newAsteroid)
+                    AsteroidData = AsteroidObj.data_set
+                    AsteroidData.set("FieldID", id(coordList), 0)
+                    fieldIDList.append(newAsteroid)
+                data.update({"fieldIDList": fieldIDList})
+                TerrainHandling.asteroidfields.update({id(coordList): data})
+                return True
+            elif data.get("type") == "nebula":
+                for coordinate in coordList:
+                    newNebula = TerrainTypes.AddNebula(simulation.simul, "nebula", coordinate)
+                    TerrainHandling.nebulaIDs.append(newNebula)
+                    NebulaObj = simulation.simul.get_space_object(newNebula)
+                    NebulaData = NebulaObj.data_set
+                    fieldIDList.append(newNebula)
+                    NebulaData.set("FieldID", id(coordList), 0)
+                data.update({"fieldIDList": fieldIDList})
+                TerrainHandling.nebulafields.update({id(coordList): data})
+                return True
+
+
+    @staticmethod
+    def TerrainConfig(event, data):
+        if "-deleteField" in event.sub_tag:
+            fieldData = data.get("FieldData")
+            fieldIDList = fieldData.get("fieldIDList")
+            fieldType = fieldData.get("type")
+            if fieldType == "asteroids":
+                for objID in fieldIDList:
+                    TerrainHandling.asteroidIDs.remove(objID)
+                    sbs.delete_object(objID)
+                TerrainHandling.asteroidfields.pop(data.get("FieldID"))
+            elif fieldType == "nebula":
+                for objID in fieldIDList:
+                    TerrainHandling.nebulaIDs.remove(objID)
+                    sbs.delete_object(objID)
+                TerrainHandling.nebulafields.pop(data.get("FieldID"))
+            return True
 
     @staticmethod
     def Settings(event, data):
@@ -1156,6 +1359,7 @@ class PanelTriggers:
         PanelTriggers.PersonnelManagement(event, data)
         PanelTriggers.AIConfig(event, data)
         PanelTriggers.JumpGateConfig(event, data)
+        PanelTriggers.TerrainConfig(event, data)
 
     @staticmethod
     def AIConfig(event, data):
@@ -1690,6 +1894,7 @@ class PanelTriggers:
         pass
 
 
+
 class GMGlobalFunctions:
     # static methods that carry out the functions linked to the console triggers
 
@@ -1714,6 +1919,10 @@ class GMGlobalFunctions:
             elif data.get("JumpPointSpawn"):
                 data.update({"SpawnCoordinate": (round(event.source_point.x), round(event.source_point.y), round(event.source_point.z))})
                 GMGlobalFunctions.SpawnJumpPoint(data, event=event)
+            elif data.get("Terrain"):
+                coord = (round(event.source_point.x), round(event.source_point.y), round(event.source_point.z))
+                GMGlobalFunctions.TerrainPoint(data, coord=coord)
+                print(coord)
             else:
                 #data.clear()
                 return True
@@ -1867,4 +2076,32 @@ class GMGlobalFunctions:
         # hull = "jump_node"
         newjumppoint = JumpPoints.JumpPoint("Gate", "behav_jumpnode", hull, "Jump Point", position=data.get("coordinate"), info=data)
         newjumppoint.SpawnObject(simulation.simul)
+
+    @staticmethod
+    def TerrainPoint(data, **kwargs):
+        coord = (0, 0, 0)
+        if "coord" in kwargs:
+            coord = kwargs.get("coord")
+
+        if data.get("StartEndPoint") == "StartPoint":
+            data.update({"start": coord})
+            if simulation.simul.navpoint_exists(data.get("SNavID")):
+                navObj = simulation.simul.get_navpoint_by_id(data.get("SNavID"))
+                navObj.pos.x = coord[0]
+                navObj.pos.z = coord[2]
+                navObj.has_changed_flag = 1
+            else:
+                newNav = simulation.simul.add_navpoint(coord[0], coord[1], coord[2], "Start", "white")
+                data.update({"SNavID": newNav})
+        else:
+            data.update({"end": coord})
+            if simulation.simul.navpoint_exists(data.get("ENavID")):
+                navObj = simulation.simul.get_navpoint_by_id(data.get("ENavID"))
+                navObj.pos.x = coord[0]
+                navObj.pos.z = coord[2]
+                navObj.has_changed_flag = 1
+            else:
+                newNav = simulation.simul.add_navpoint(coord[0], coord[1], coord[2], "End", "white")
+                data.update({"ENavID": newNav})
+
 

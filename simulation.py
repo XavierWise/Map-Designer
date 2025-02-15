@@ -9,12 +9,11 @@ simul = None
 #simstatus is used to track whether the simulation is running
 simstatus = False
 simwarpmode = False
-startSystem = "Corus2"
+startSystem = "Hypherion"
 systemMapCoord = [0, 0, 0]
 systemAlignment = ""
 
 Server = ClientNEW.Server(0)
-
 
 
 def HandleSimulationStart():

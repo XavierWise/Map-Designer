@@ -96,6 +96,7 @@ def generateTerrain(sim, terrainlist):
             minefields.update({minefield.ID: minefield})
         else:
             coordinates = generateLineCoords(data.get("seed"), data.get("start"), data.get("end"), int(data.get("density")), int(data.get("scatter")), 0)
+            fieldIDList = []
             if data.get("type") == "asteroids":
                 choiceList = []
                 for coordinate in coordinates:
@@ -105,11 +106,21 @@ def generateTerrain(sim, terrainlist):
                     ast = random.choice(choiceList)
                     newAsteroid = TerrainTypes.AddAsteroid(sim, ast, coordinate)
                     asteroidIDs.append(newAsteroid)
+                    fieldIDList.append(newAsteroid)
+                    AsteroidObj = simulation.simul.get_space_object(newAsteroid)
+                    AsteroidData = AsteroidObj.data_set
+                    AsteroidData.set("FieldID", id, 0)
+                data.update({"fieldIDList": fieldIDList})
                 asteroidfields.update({id: data})
             elif data.get("type") == "nebulas":
                 for coordinate in coordinates:
                     newNebula = TerrainTypes.AddNebula(sim, "nebula", coordinate)
                     nebulaIDs.append(newNebula)
+                    fieldIDList.append(newNebula)
+                    NebulaObj = simulation.simul.get_space_object(newNebula)
+                    NebulaData = NebulaObj.data_set
+                    NebulaData.set("FieldID", id, 0)
+                data.update({"fieldIDList": fieldIDList})
                 nebulafields.update({id: data})
 
 
@@ -232,14 +243,24 @@ def compileTerrainList():
     for AsteroidID, asteroidData in asteroidfields.items(): #stored dictionary of script ID an script Object
         asteroidFieldData = {
             "type": "asteroids",
-            "seed": 2010}
-        terrainList.update({AsteroidID: asteroidFieldData | asteroidData})
+            "seed": 2010,
+            "start": asteroidData.get("start"),
+            "end": asteroidData.get("end"),
+            "density": asteroidData.get("density"),
+            "scatter": asteroidData.get("scatter"),
+            "composition": asteroidData.get("composition")}
+        terrainList.update({AsteroidID: asteroidFieldData})
 
     for NebulaID, NebulaData in nebulafields.items():  # stored dictionary of script ID an script Object
         nebulaFieldData = {
             "type": "nebulas",
-            "seed": 2010}
-        terrainList.update({NebulaID: nebulaFieldData | NebulaData})
+            "seed": 2010,
+            "start": NebulaData.get("start"),
+            "end": NebulaData.get("end"),
+            "density": NebulaData.get("density"),
+            "scatter": NebulaData.get("scatter"),
+            "composition": NebulaData.get("composition")}
+        terrainList.update({NebulaID: nebulaFieldData})
     return terrainList
 
 

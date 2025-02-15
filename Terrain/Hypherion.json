@@ -1,0 +1,30 @@
+{
+     "systemMapCoord":[
+          0,
+          0,
+          30
+     ],
+     "systemalignment":"USFP",
+     "objects":{},
+     "terrain":{
+          "2564970821120":{
+               "type":"asteroids",
+               "seed":2010,
+               "start":[
+                    -647,
+                    0,
+                    4138
+               ],
+               "end":[
+                    3209,
+                    0,
+                    -450
+               ],
+               "density":56,
+               "scatter":1000,
+               "composition":[
+                    "Ast. Std Rand"
+               ]
+          }
+     }
+}
