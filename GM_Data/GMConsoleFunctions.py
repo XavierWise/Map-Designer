@@ -1894,7 +1894,6 @@ class PanelTriggers:
         pass
 
 
-
 class GMGlobalFunctions:
     # static methods that carry out the functions linked to the console triggers
 

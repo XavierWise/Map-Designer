@@ -19,8 +19,6 @@ def MainMapControls(clientObj):
     for panel in menus.panelDatabase:
         panel.displayPanel()
 
-
-
 consoleData = {
     "GM Controls": {
         "subConsoles": {
