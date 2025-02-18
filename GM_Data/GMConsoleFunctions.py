@@ -244,11 +244,23 @@ class FunctionsPanel(Panel):
         super().Triggers(event)
         if str(id(self)) in event.sub_tag:
             if self.paneltriggers(event, self.paneldata): # triggers linked to the console type being displayed
+                if self.name == "Terrain" and not self.active:
+                    simulation.simul.delete_navpoint_by_id(simulation.simul.get_navpoint_id_by_name("Start"))
+                    simulation.simul.delete_navpoint_by_id(simulation.simul.get_navpoint_id_by_name("End"))
                 self.switchActive()
                 sbs_tools.crender(self.clientObj, "")
+            if event.sub_tag == f"{id(self)}-collapse":  # collapse the menu to side
+                self.state = "collapsed"
+                if self.name == "Terrain" and self.active:
+                    simulation.simul.delete_navpoint_by_id(simulation.simul.get_navpoint_id_by_name("Start"))
+                    simulation.simul.delete_navpoint_by_id(simulation.simul.get_navpoint_id_by_name("End"))
+                self.active = False  # make this inactive when collapsed
             if event.sub_tag == f"{id(self)}-close": # close the menu and delete it
                 menus = self.clientObj.myShip.shipSystems.get("Menus")
                 menus.panelDatabase.remove(self)
+                if self.name == "Terrain" and self.active:
+                    simulation.simul.delete_navpoint_by_id(simulation.simul.get_navpoint_id_by_name("Start"))
+                    simulation.simul.delete_navpoint_by_id(simulation.simul.get_navpoint_id_by_name("End"))
                 self.active = False  # make this inactive as it is being deleted
                 sbs_tools.crender(self.clientObj, "")
                 del self
@@ -453,20 +465,22 @@ class SelectionPanel(Panel):
                               }
                          })
             return data
-        elif selectedID in TerrainHandling.asteroidIDs + TerrainHandling.nebulaIDs:
+        elif selectedID in TerrainHandling.asteroidIDs or selectedID in TerrainHandling.nebulaIDs:
+
             Object = simulation.simul.get_space_object(selectedID)
             ObjData = Object.data_set
             FieldID = ObjData.get("FieldID", 0)
             FieldData = {}
-            print(Object.tick_type)
+            #print(Object.tick_type)
             if Object.tick_type == "behav_asteroid":
                 FieldData = TerrainHandling.asteroidfields.get(FieldID)
             elif Object.tick_type == "behav_nebula":
                 FieldData = TerrainHandling.nebulafields.get(FieldID)
-            print(FieldData)
+            #print(FieldData)
             data.update({"Type": "Terrain",
                          "FieldID": FieldID,
-                         "FieldData": FieldData,
+                         "FieldIDList": FieldData.get("fieldIDList"),
+                         "FieldType": FieldData.get("type"),
                          "ObjID": selectedID,
                          "ObjData": ObjData})
             return data
@@ -700,7 +714,7 @@ class GMPanelTypes:
                 xpos += 10
                 GUI.ToggleButton(clientObj.clientID, "", f"{panelID}-EndPoint", xpos + 0.5, ypos, 9.5, 3, text="End", togglecolour=colour2, font="smallest")
                 xpos += 11
-                terrainList = "nebula^asteroids"
+                terrainList = "nebulas^asteroids"
                 selectedTerrain = data.get("type")
                 sbs.send_gui_dropdown(clientObj.clientID, "", f"{panelID}-TerrainType", f"text: Terrain Type; font: gui-1; list:{terrainList}", xpos, ypos, xpos + 10, ypos + 3)
 
@@ -1244,18 +1258,17 @@ class PanelTriggers:
             data.update({"type": event.value_tag})
             if event.value_tag == "asteroids":
                 data.update({"composition": ["Ast. Std Rand"]})
-            if event.value_tag == "nebula":
+            if event.value_tag == "nebulas":
                 data.update({"composition": []})
             #sbs_tools.crenderID(event.client_id, ClientNEW.activeClients, "")
             return True
-        if "-CreateTerrain" in event.sub_tag:
+        if "-CreateTerrain" in event.sub_tag and data.get("SNavID") > 0 and data.get("ENavID") > 0:
             start = data.get("start")
             end = data.get("end")
             density = data.get("density")
             scatter = data.get("scatter")
-            simulation.simul.delete_navpoint_by_id(data.get("SNavID"))
-            simulation.simul.delete_navpoint_by_id(data.get("ENavID"))
             coordList = TerrainHandling.generateLineCoords(2010, start, end, density, scatter, 0)
+
             fieldIDList = []
             if data.get("type") == "asteroids":
                 choiceList = []
@@ -1271,43 +1284,53 @@ class PanelTriggers:
                     AsteroidData.set("FieldID", id(coordList), 0)
                     fieldIDList.append(newAsteroid)
                 data.update({"fieldIDList": fieldIDList})
-                TerrainHandling.asteroidfields.update({id(coordList): data})
-            elif data.get("type") == "nebula":
+                TerrainHandling.asteroidfields.update({id(coordList): copy.deepcopy(data)})
+            if data.get("type") == "nebulas":
+                coordList = TerrainHandling.generateLineCoords(2010, start, end, density, scatter, 0)
                 for coordinate in coordList:
                     newNebula = TerrainTypes.AddNebula(simulation.simul, "nebula", coordinate)
                     TerrainHandling.nebulaIDs.append(newNebula)
                     NebulaObj = simulation.simul.get_space_object(newNebula)
                     NebulaData = NebulaObj.data_set
-                    fieldIDList.append(newNebula)
                     NebulaData.set("FieldID", id(coordList), 0)
+                    fieldIDList.append(newNebula)
                 data.update({"fieldIDList": fieldIDList})
-                TerrainHandling.nebulafields.update({id(coordList): data})
-            TerrainHandling.createSensorMarker(id, data.get("start"))
-            TerrainHandling.createSensorMarker(id, data.get("end"))
+                TerrainHandling.nebulafields.update({id(coordList): copy.deepcopy(data)})
+            TerrainHandling.createSensorMarker(id(coordList), data.get("start"))
+            TerrainHandling.createSensorMarker(id(coordList), data.get("end"))
+
+            simulation.simul.delete_navpoint_by_id(data.get("SNavID"))
+            simulation.simul.delete_navpoint_by_id(data.get("ENavID"))
+            data.update({"SNavID": -1})
+            data.update({"ENavID": -1})
+            data.update({"start": (0, 0, 0)})
+            data.update({"end": (0, 0, 0)})
             return True
 
 
     @staticmethod
     def TerrainConfig(event, data):
         if "-deleteField" in event.sub_tag:
-            fieldData = data.get("FieldData")
-            fieldIDList = fieldData.get("fieldIDList")
-            fieldType = fieldData.get("type")
+            fieldIDList = data.get("FieldIDList")
+            fieldType = data.get("FieldType")
             if fieldType == "asteroids":
                 for objID in fieldIDList:
                     TerrainHandling.asteroidIDs.remove(objID)
                     sbs.delete_object(objID)
-                TerrainHandling.asteroidfields.pop(data.get("FieldID"))
-            elif fieldType == "nebula":
+                del TerrainHandling.asteroidfields[data.get("FieldID")]
+            elif fieldType == "nebulas":
                 for objID in fieldIDList:
                     TerrainHandling.nebulaIDs.remove(objID)
                     sbs.delete_object(objID)
-                TerrainHandling.nebulafields.pop(data.get("FieldID"))
+                del TerrainHandling.nebulafields[data.get("FieldID")]
+            killList = []
             for markerObj in TerrainHandling.sensorMarkers:
                 markerData = markerObj.data_set
                 if markerData.get("fieldID", 0) == data.get("FieldID"):
                     sbs.delete_object(markerObj.unique_ID)
-
+                    killList.append(markerObj)
+            for markerObj in killList:
+                TerrainHandling.sensorMarkers.remove(markerObj)
             return True
 
     @staticmethod
@@ -1927,7 +1950,6 @@ class GMGlobalFunctions:
             elif data.get("Terrain"):
                 coord = (round(event.source_point.x), round(event.source_point.y), round(event.source_point.z))
                 GMGlobalFunctions.TerrainPoint(data, coord=coord)
-                print(coord)
             else:
                 #data.clear()
                 return True
@@ -2058,8 +2080,7 @@ class GMGlobalFunctions:
                 "type": "station",
                 "hull": station,
                 "facilities": [],
-                "ordnance": {},
-                "cargo": [],
+                "cargo": {},
             }
             station = Stations.setupStation("Station", data)
             station.SpawnObject(simulation.simul)
@@ -2095,9 +2116,12 @@ class GMGlobalFunctions:
                 navObj.pos.x = coord[0]
                 navObj.pos.z = coord[2]
                 navObj.has_changed_flag = 1
+                data.update({"StartEndPoint": "EndPoint"})
             else:
+                simulation.simul.delete_navpoint_by_id(simulation.simul.get_navpoint_id_by_name("Start"))
                 newNav = simulation.simul.add_navpoint(coord[0], coord[1], coord[2], "Start", "white")
                 data.update({"SNavID": newNav})
+                data.update({"StartEndPoint": "EndPoint"})
         else:
             data.update({"end": coord})
             if simulation.simul.navpoint_exists(data.get("ENavID")):
@@ -2105,8 +2129,11 @@ class GMGlobalFunctions:
                 navObj.pos.x = coord[0]
                 navObj.pos.z = coord[2]
                 navObj.has_changed_flag = 1
+                data.update({"StartEndPoint": "StartPoint"})
             else:
+                simulation.simul.delete_navpoint_by_id(simulation.simul.get_navpoint_id_by_name("End"))
                 newNav = simulation.simul.add_navpoint(coord[0], coord[1], coord[2], "End", "white")
                 data.update({"ENavID": newNav})
+                data.update({"StartEndPoint": "StartPoint"})
 
 

@@ -1,0 +1,43 @@
+{
+     "systemMapCoord":[
+          10,
+          0,
+          0
+     ],
+     "systemalignment":"USFP",
+     "objects":{
+          "Station":{
+               "coordinate":[
+                    61692.6171875,
+                    0.0,
+                    76536.6875
+               ],
+               "sides":[
+                    "TSN"
+               ],
+               "hull":"starbase_command",
+               "type":"station",
+               "facilities":[],
+               "cargo":{},
+               "teams":{
+                    "DamCon":6,
+                    "Medics":4,
+                    "Marines":2,
+                    "Combat Engineers":4
+               }
+          },
+          "Atlantis Gate":{
+               "coordinate":[
+                    63800.0,
+                    0.0,
+                    76000.0
+               ],
+               "type":"jump_point",
+               "jumppointtype":"Node",
+               "destinations":{},
+               "state":"Tethered",
+               "drift":0
+          }
+     },
+     "terrain":{}
+}

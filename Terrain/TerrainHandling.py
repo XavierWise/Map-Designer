@@ -1,6 +1,6 @@
 import random, hjson, os, sbs
 import sbs_tools as tools
-import simulation
+import simulation, copy
 import tsn_databases, Objects
 from Terrain import TerrainTypes
 from Objects import SpaceObjects, JumpPoints, Stations
@@ -110,9 +110,9 @@ def generateTerrain(sim, terrainlist):
                     fieldIDList.append(newAsteroid)
                     AsteroidObj = simulation.simul.get_space_object(newAsteroid)
                     AsteroidData = AsteroidObj.data_set
-                    AsteroidData.set("FieldID", id, 0)
+                    AsteroidData.set("FieldID", int(id), 0)
                 data.update({"fieldIDList": fieldIDList})
-                asteroidfields.update({id: data})
+                asteroidfields.update({int(id): data})
             elif data.get("type") == "nebulas":
                 for coordinate in coordinates:
                     newNebula = TerrainTypes.AddNebula(sim, "nebula", coordinate)
@@ -120,15 +120,15 @@ def generateTerrain(sim, terrainlist):
                     fieldIDList.append(newNebula)
                     NebulaObj = simulation.simul.get_space_object(newNebula)
                     NebulaData = NebulaObj.data_set
-                    NebulaData.set("FieldID", id, 0)
+                    NebulaData.set("FieldID", int(id), 0)
                 data.update({"fieldIDList": fieldIDList})
-                nebulafields.update({id: data})
-            createSensorMarker(id, data.get("start"))
-            createSensorMarker(id, data.get("end"))
+                nebulafields.update({int(id): copy.deepcopy(data)})
+            createSensorMarker(int(id), data.get("start"))
+            createSensorMarker(int(id), data.get("end"))
 
 
 def createSensorMarker(fieldID, coord):
-    marker = simulation.simul.create_space_object("behav_sensormarker", "generic-cylinder", 0xfff0)
+    marker = simulation.simul.create_space_object("behav_marker", "generic-cylinder", 0xfff0)
     markerObj = simulation.simul.get_space_object(marker)
     markerData = markerObj.data_set
     markerData.set("local_scale_coeff", 0.1, 0)
@@ -138,6 +138,7 @@ def createSensorMarker(fieldID, coord):
     for GMID, GMObj in SpaceObjects.activeGameMasters.items():
         index = GMObj.ObjectData.get("num_extra_scan_sources", 0)
         GMObj.ObjectData.set("extra_scan_source", marker, index)
+        GMObj.ObjectData.set("num_extra_scan_sources", index + 1, 0)
 
 
 def setupObjects(system, objects):

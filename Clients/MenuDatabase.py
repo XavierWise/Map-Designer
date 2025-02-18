@@ -6,6 +6,8 @@ from Terrain import TerrainHandling
 
 def MapSelection(clientObj):
     sbs.send_gui_image(clientObj.clientID, "", f"system-menu-background", "image: ../missions/TSN Cosmos/Images/GMSystembackground; color: white", 0, 0, 100, 100)
+    x = 10
+    y = 10
     for name, datalist in TerrainHandling.allsystems.items():
         if name == simulation.startSystem:
             colour = "#00FF2A"
@@ -14,10 +16,16 @@ def MapSelection(clientObj):
         else:
             colour = "red"
         coordinate = datalist[0]
-        x = 47.5 + coordinate[0]
-        y = 47.5 + coordinate[2]
+        """x = 47.5 + coordinate[0]
+        y = 47.5 + coordinate[2]"""
+
         sbs.send_gui_rawiconbutton(clientObj.clientID, "", f"selsyst-{name}", f"icon_index: 01; color: {colour}", x, y, x + 5, y + 5)
         sbs.send_gui_text(clientObj.clientID, "", f"system-label-{name}", f"text: {name}; font: smallest; justify: center", x, y + 5, x + 5, y + 8)
+        x += 10
+        if x > 80:
+            x = 10
+            y += 10
+
     sbs.send_gui_button(clientObj.clientID, "", "load-system", "text: Load; font: gui-1", 92, 14, 100, 17)
     sbs.send_gui_button(clientObj.clientID, "", "save-system", "text: Save; font: gui-1", 92, 10, 100, 13)
 

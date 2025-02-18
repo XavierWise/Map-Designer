@@ -17,9 +17,7 @@ class GMObject(SpaceObjects.SimulationObject):
         super().SpawnObject(sim, **kwargs)
         self.setupsystems()
         SpaceObjects.activeGameMasters.update({self.ObjectID: self})
-        self.ObjectData.get("ship_base_scan_range", 0)
         self.ObjectData.set("ship_base_scan_range", 1000000, 0)
-        self.ObjectData.get("ship_base_scan_range", 0)
 
     def addscansources(self):
         index = self.ObjectData.get("num_extra_scan_sources", 0)
