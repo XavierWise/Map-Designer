@@ -3,7 +3,7 @@ import sbs_tools as tools
 import simulation, copy
 import tsn_databases, Objects
 from Terrain import TerrainTypes
-from Objects import SpaceObjects, JumpPoints, Stations
+from Objects import SpaceObjects, JumpPoints, Stations, OtherObjects
 
 
 blackholeIDs = []
@@ -30,7 +30,7 @@ def compileSystemInformation():
     allsystems = {}
     for systemname in systemlist():
         print(systemname)
-        with open(tools.find(f"{systemname}.json", os.getcwd()), "r") as systemdatafile:
+        with open(tools.find(f"{systemname}.json", os.getcwd() + "\data\missions\Map Designer\Terrain\\"), "r") as systemdatafile:
             systemdata = hjson.load(systemdatafile)
             alignment = systemdata.get("systemalignment")
             mapCoord = systemdata.get("systemMapCoord")
@@ -65,7 +65,7 @@ def generateLineCoords(seed, start, end, density, scatter, height):
 
 #checked and improved code
 def loaddata(systemname):
-    with open(tools.find(f"{systemname}.json", os.getcwd()), "r") as systemdatafile:
+    with open(tools.find(f"{systemname}.json", os.getcwd() + "\data\missions\Map Designer\Terrain\\"), "r") as systemdatafile:
         systemdata = hjson.load(systemdatafile)
         simulation.systemMapCoord = systemdata.get("systemMapCoord")
         simulation.systemAlignment = systemdata.get("systemalignment")
@@ -128,7 +128,7 @@ def generateTerrain(sim, terrainlist):
 
 
 def createSensorMarker(fieldID, coord):
-    marker = simulation.simul.create_space_object("behav_marker", "generic-cylinder", 0xfff0)
+    marker = simulation.simul.create_space_object("behav_station", "generic-cylinder", 0xfff0)
     markerObj = simulation.simul.get_space_object(marker)
     markerData = markerObj.data_set
     markerData.set("local_scale_coeff", 0.1, 0)
@@ -137,6 +137,8 @@ def createSensorMarker(fieldID, coord):
     sensorMarkers.append(markerObj)
     for GMID, GMObj in SpaceObjects.activeGameMasters.items():
         index = GMObj.ObjectData.get("num_extra_scan_sources", 0)
+        print(index)
+        print(marker)
         GMObj.ObjectData.set("extra_scan_source", marker, index)
         GMObj.ObjectData.set("num_extra_scan_sources", index + 1, 0)
 
@@ -150,6 +152,8 @@ def setupObjects(system, objects):
             newObject = Stations.setupStation(name, data)
         elif data.get("type") == "jump_point":
             newObject = JumpPoints.JumpPoint(name, "behav_jumpnode", "invisible", "Jump Point", position=data.get("coordinate"), info=data)
+        elif data.get("type") == "sensor_relay":
+            newObject = OtherObjects.SensorRelay(position=data.get("coordinate"))
         else:
             newObject = None
         if newObject:
@@ -183,7 +187,7 @@ def clearTerrain():
     nebulafields = {}
 
     deleteList = []
-    for activeObjID in SpaceObjects.activeStations.keys() | SpaceObjects.activeObjects.keys() | SpaceObjects.activeJumpPoints.keys():
+    for activeObjID in SpaceObjects.activeStations.keys() | SpaceObjects.activeObjects.keys() | SpaceObjects.activeJumpPoints.keys() | SpaceObjects.activeObjects.keys():
         deleteList.append(activeObjID)
     for object in deleteList:
         sbs.delete_object(object)
@@ -204,8 +208,18 @@ def clearTerrain():
 def compileObjectList():
     # compiling all the data ready to save
     objectList = {}
+    relayNumber = 1
     for SimObj in SpaceObjects.activeObjects.values(): #stored dictionary of script ID an script Object
-        pass
+        if SimObj.ObjectBehaviour == "behav_relay":
+            name = f"Relay {relayNumber}"
+            coordinate = [SimObj.Object.pos.x, SimObj.Object.pos.y, SimObj.Object.pos.z]
+            objectList.update({
+                name: {
+                    "coordinate": coordinate,
+                    "type": "sensor_relay",
+                }
+            })
+            relayNumber += 1
     for SimObj in SpaceObjects.activeStations.values():  # stored dictionary of script ID an script Object
         name = SimObj.ObjectName
         coordinate = [SimObj.Object.pos.x, SimObj.Object.pos.y, SimObj.Object.pos.z]
@@ -280,6 +294,18 @@ def compileTerrainList():
             "scatter": NebulaData.get("scatter"),
             "composition": NebulaData.get("composition")}
         terrainList.update({NebulaID: nebulaFieldData})
+    for BlackholeID in blackholeIDs:
+        blackholeObj = simulation.simul.get_space_object(BlackholeID)
+        blackholeData = {
+            "type": "blackhole",
+            "name": "Blackhole",
+            "coordinate": [
+                blackholeObj.pos.x,
+                blackholeObj.pos.y,
+                blackholeObj.pos.z
+            ]
+        }
+        terrainList.update({BlackholeID: blackholeData})
     return terrainList
 
 

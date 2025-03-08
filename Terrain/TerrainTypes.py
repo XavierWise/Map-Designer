@@ -43,10 +43,6 @@ def AddBlackHole(sim, name, position, **kwargs):
     blob.set("gravity_strength", 1, 0)
     blob.set("turbulence_strength", 1, 0)
     blob.set("collision_damage", 10, 0)
-    blob.set("scan_type_list", "scan,gravity,radiation", 0)
-    blob.set("USFPgravity", "High", 0)
-    blob.set("USFPradiation", "none", 0)
-    blob.set("USFPscan", "Hello World!", 0)
     return blackholeID
 
 

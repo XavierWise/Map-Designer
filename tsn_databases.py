@@ -264,40 +264,6 @@ commoditiesDatabase = {
 }
 
 ordnanceDatabase = {
-    "Mk1": {
-        "icon": 241,
-        "colour": "#0077ff",
-        "count": 0,
-
-        "speed": 40,
-        "lifetime": 10,
-        "flare_color": "white",
-        "trail_color": "white",
-        "warhead": ["standard", 0],
-        "damage": 40,
-        "explosion_size": 10,
-        "explosion_color": "fire",
-        "behavior": "homing",
-        "energy_conversion_value": 0
-    },
-
-    "Mk2": {
-        "icon": 241,
-        "colour": "#0077ff",
-        "count": 0,
-
-        "speed": 40,
-        "lifetime": 10,
-        "flare_color": "white",
-        "trail_color": "white",
-        "warhead": ["standard", 0],
-        "damage": 55,
-        "explosion_size": 10,
-        "explosion_color": "fire",
-        "behavior": "homing",
-        "energy_conversion_value": 0
-    },
-
     "Homing": {
         "icon": 241,
         "colour": "#0077ff",
@@ -615,6 +581,28 @@ usfpStations = {
                      "Transport Shuttle": 1
                      },
     },
+    "usfp_industrial_1": {
+        "tags": ["station", "usfp", "civilian", "industrial"],
+        "type": "Industrial",
+        "race": 'USFP',
+        "scandata": NPC_ScanData.genericScanData,
+        "Teams": {"Medics": 2},
+        "Shuttles": {"Ranger": 1,
+                     "Cargo Shuttle": 1,
+                     "Transport Shuttle": 1
+                     },
+    },
+    "usfp_storage_1": {
+        "tags": ["station", "usfp", "civilian", "industrial"],
+        "type": "Industrial",
+        "race": 'USFP',
+        "scandata": NPC_ScanData.genericScanData,
+        "Teams": {"Medics": 2},
+        "Shuttles": {"Ranger": 1,
+                     "Cargo Shuttle": 1,
+                     "Transport Shuttle": 1
+                     },
+    }
 }
 
 tsnStations = {
@@ -668,16 +656,33 @@ kralienStations = {
         "Teams":    {},
         "Shuttles": {},
     },
+    "hegemony_generator": {
+        "tags": ["station", "hegemony"],
+        "type": "Generator",
+        "race": 'Kralien',
+        "scandata": NPC_ScanData.genericScanData,
+        "Teams": {},
+        "Shuttles": {},
+    },
 }
 
 hjordenStations = {}
 
-euphiniStations = {}
+euphiniStations = {
+    "pirate_military_base": {
+        "tags": ["station", "pirate"],
+        "type": "Command",
+        "race": 'Euphini',
+        "scandata": NPC_ScanData.genericScanData,
+        "Teams": {},
+        "Shuttles": {},
+    },
+}
 
 skullStations = {}
 
 infrastructure = {
-    "generic-tetrahedron": {
+    "jump_node": {
         "tags": ["node"],
         "type": "Jump Node",
         "race": "USFP",

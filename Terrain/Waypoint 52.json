@@ -6,27 +6,15 @@
      ],
      "systemalignment":"USFP",
      "objects":{
-          "Station":{
+          "Sensor Relay":{
                "coordinate":[
-                    61692.6171875,
+                    36368.98828125,
                     0.0,
-                    76536.6875
+                    -5453.9921875
                ],
-               "sides":[
-                    "TSN"
-               ],
-               "hull":"starbase_command",
-               "type":"station",
-               "facilities":[],
-               "cargo":{},
-               "teams":{
-                    "DamCon":6,
-                    "Medics":4,
-                    "Marines":2,
-                    "Combat Engineers":4
-               }
+               "type":"sensor_relay"
           },
-          "Atlantis Gate":{
+          "Atlanti Gate":{
                "coordinate":[
                     63800.0,
                     0.0,
@@ -36,8 +24,233 @@
                "jumppointtype":"Node",
                "destinations":{},
                "state":"Tethered",
-               "drift":0
+               "drift":"0"
+          },
+          "Volantis Gate":{
+               "coordinate":[
+                    4798.669921875,
+                    0.0,
+                    -75213.53125
+               ],
+               "type":"jump_point",
+               "jumppointtype":"Node",
+               "destinations":{},
+               "state":"Tethered",
+               "drift":"0"
           }
      },
-     "terrain":{}
+     "terrain":{
+          "1333617181312":{
+               "type":"asteroids",
+               "seed":2010,
+               "start":[
+                    1986,
+                    0,
+                    74207
+               ],
+               "end":[
+                    31232,
+                    0,
+                    58961
+               ],
+               "density":144,
+               "scatter":2945,
+               "composition":[
+                    "Ast. Std Rand"
+               ]
+          },
+          "1333617034880":{
+               "type":"asteroids",
+               "seed":2010,
+               "start":[
+                    1918,
+                    0,
+                    -37133
+               ],
+               "end":[
+                    56261,
+                    0,
+                    -21003
+               ],
+               "density":278,
+               "scatter":6473,
+               "composition":[
+                    "Ast. Std Rand"
+               ]
+          },
+          "1333617239488":{
+               "type":"asteroids",
+               "seed":2010,
+               "start":[
+                    55522,
+                    0,
+                    -61792
+               ],
+               "end":[
+                    37709,
+                    0,
+                    -59996
+               ],
+               "density":144,
+               "scatter":5078,
+               "composition":[
+                    "Ast. Std Rand"
+               ]
+          },
+          "1333617240384":{
+               "type":"asteroids",
+               "seed":2010,
+               "start":[
+                    58089,
+                    0,
+                    -63127
+               ],
+               "end":[
+                    75184,
+                    0,
+                    -77552
+               ],
+               "density":257,
+               "scatter":5078,
+               "composition":[
+                    "Ast. Std Rand"
+               ]
+          },
+          "1333617191232":{
+               "type":"nebulas",
+               "seed":2010,
+               "start":[
+                    54464,
+                    0,
+                    60265
+               ],
+               "end":[
+                    40197,
+                    0,
+                    70598
+               ],
+               "density":105,
+               "scatter":4928,
+               "composition":[]
+          },
+          "1333617193792":{
+               "type":"nebulas",
+               "seed":2010,
+               "start":[
+                    18926,
+                    0,
+                    78832
+               ],
+               "end":[
+                    143,
+                    0,
+                    80201
+               ],
+               "density":144,
+               "scatter":4928,
+               "composition":[]
+          },
+          "1333617193408":{
+               "type":"nebulas",
+               "seed":2010,
+               "start":[
+                    41711,
+                    0,
+                    56464
+               ],
+               "end":[
+                    49211,
+                    0,
+                    51830
+               ],
+               "density":109,
+               "scatter":2945,
+               "composition":[]
+          },
+          "1333617194048":{
+               "type":"nebulas",
+               "seed":2010,
+               "start":[
+                    -338,
+                    0,
+                    93433
+               ],
+               "end":[
+                    18293,
+                    0,
+                    84974
+               ],
+               "density":109,
+               "scatter":2945,
+               "composition":[]
+          },
+          "1333617034944":{
+               "type":"nebulas",
+               "seed":2010,
+               "start":[
+                    69385,
+                    0,
+                    34011
+               ],
+               "end":[
+                    70066,
+                    0,
+                    2916
+               ],
+               "density":409,
+               "scatter":8430,
+               "composition":[]
+          },
+          "1333617267200":{
+               "type":"nebulas",
+               "seed":2010,
+               "start":[
+                    70008,
+                    0,
+                    -36636
+               ],
+               "end":[
+                    69760,
+                    0,
+                    -2939
+               ],
+               "density":372,
+               "scatter":8523,
+               "composition":[]
+          },
+          "1333617239360":{
+               "type":"nebulas",
+               "seed":2010,
+               "start":[
+                    16918,
+                    0,
+                    -73881
+               ],
+               "end":[
+                    51784,
+                    0,
+                    -72289
+               ],
+               "density":376,
+               "scatter":8102,
+               "composition":[]
+          },
+          "1333617239680":{
+               "type":"nebulas",
+               "seed":2010,
+               "start":[
+                    53506,
+                    0,
+                    -77497
+               ],
+               "end":[
+                    94398,
+                    0,
+                    -105949
+               ],
+               "density":376,
+               "scatter":8102,
+               "composition":[]
+          }
+     }
 }

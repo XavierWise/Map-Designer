@@ -9,7 +9,7 @@ simul = None
 #simstatus is used to track whether the simulation is running
 simstatus = False
 simwarpmode = False
-startSystem = "Hypherion"
+startSystem = "New1"
 systemMapCoord = [0, 0, 0]
 systemAlignment = ""
 
@@ -23,4 +23,3 @@ def HandleSimulationStart():
     simstatus = True
     for client in ClientNEW.activeClients.values():
         sbs_tools.crender(client, "")
-

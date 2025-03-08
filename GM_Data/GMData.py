@@ -120,8 +120,8 @@ otherObjectsDatabase = {
     "Medics": OtherObjects.MedicTeam,
     "DamCon": OtherObjects.DamConTeam,
     "Combat Engineers": OtherObjects.CombatEngTeam,
-    "Evacuees": OtherObjects.EvacueeTeam
-}
+    "Evacuees": OtherObjects.EvacueeTeam,
+    "Sensor Relay": OtherObjects.SensorRelay}
 
 for item in tsn_databases.masterDatabase.keys():
     if item == "Comms Relay":
@@ -143,4 +143,7 @@ masterStationTypes = {
     "Skull": tsn_databases.skullStations
 }
 
-terrainDatabase = {}
+terrainDatabase = {"blackhole": {"icon": 3},
+                   "nebulas": {"icon": 8},
+                   "asteroids": {"icon": 51}
+                   }

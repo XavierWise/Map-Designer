@@ -466,7 +466,6 @@ class SelectionPanel(Panel):
                          })
             return data
         elif selectedID in TerrainHandling.asteroidIDs or selectedID in TerrainHandling.nebulaIDs:
-
             Object = simulation.simul.get_space_object(selectedID)
             ObjData = Object.data_set
             FieldID = ObjData.get("FieldID", 0)
@@ -483,6 +482,13 @@ class SelectionPanel(Panel):
                          "FieldType": FieldData.get("type"),
                          "ObjID": selectedID,
                          "ObjData": ObjData})
+            return data
+        elif selectedID in TerrainHandling.blackholeIDs:
+            Object = simulation.simul.get_space_object(selectedID)
+            data.update({
+                "Type": "Terrain",
+                "TerrainID": selectedID
+            })
             return data
         else:
             self.state = "collapsed"
@@ -515,6 +521,7 @@ class GMPanelTypes:
         w = wh[0]
         h = wh[1]
         selectedData = data.get("Object Data")
+        print(data.get("Object Data"))
         panelname = "Select an Object"
         if selectedData:
             panelname = selectedData.get('Name')
@@ -700,40 +707,54 @@ class GMPanelTypes:
             #terrain sub-type
             #single or field
             #density of field
-            case _:
-                startendpoint = data.get("StartEndPoint")
-                xpos += 1
-                ypos += 5
-                colour1 = "#ff3300"
-                colour2 = "#ff3300"
-                if startendpoint == "StartPoint":
-                    colour1 = "#006600"
-                elif startendpoint == "EndPoint":
-                    colour2 = "#006600"
-                GUI.ToggleButton(clientObj.clientID, "", f"{panelID}-StartPoint", xpos + 0.5, ypos, 9.5, 3, text="Start", togglecolour=colour1, font="smallest")
-                xpos += 10
-                GUI.ToggleButton(clientObj.clientID, "", f"{panelID}-EndPoint", xpos + 0.5, ypos, 9.5, 3, text="End", togglecolour=colour2, font="smallest")
-                xpos += 11
-                terrainList = "nebulas^asteroids"
-                selectedTerrain = data.get("type")
-                sbs.send_gui_dropdown(clientObj.clientID, "", f"{panelID}-TerrainType", f"text: Terrain Type; font: gui-1; list:{terrainList}", xpos, ypos, xpos + 10, ypos + 3)
+            case 1:
 
+                xpos += 1
+                ypos += 3
+                selectedTerrain = data.get("type")
+                for terrainType, terrainData in GMData.terrainDatabase.items():
+                    colour = "orange"
+                    if selectedTerrain == terrainType:
+                        colour = "green"
+                    sbs.send_gui_rawiconbutton(clientObj.clientID, "", f"{panelID}-TerrainType-{terrainType}", f"icon_index: {terrainData.get('icon')}; color: {colour}", xpos, ypos, xpos + 3, ypos + 3)
+                    xpos += 3.5
                 xpos = position[0] + 1
+
+                """sbs.send_gui_dropdown(clientObj.clientID, "", f"{panelID}-TerrainType", f"text: Terrain Type; font: gui-1; list:{terrainList}", xpos, ypos, xpos + 10, ypos + 3)"""
                 ypos += 5
                 sbs.send_gui_text(clientObj.clientID, "", f"{panelID}-terrainTitle", f"text:Selected Terrain - {selectedTerrain}; font: gui-1", xpos, ypos, xpos + 30, ypos + 3)
-                scatter = data.get("scatter")
-                ypos += 5
-                sbs.send_gui_text(clientObj.clientID, "", f"{panelID}-scatterTitle", f"text:Scatter {scatter}; font: gui-1", xpos, ypos, xpos + 30, ypos + 3)
-                ypos += 3
-                sbs.send_gui_slider(clientObj.clientID, "", f"{panelID}-scatter", scatter, "low:1000; high: 10000", xpos, ypos, xpos + 30, ypos + 3)
-                density = data.get("density")
-                ypos += 5
-                sbs.send_gui_text(clientObj.clientID, "", f"{panelID}-densityTitle", f"text:Density {density}; font: gui-1", xpos, ypos, xpos + 30, ypos + 3)
-                ypos += 3
-                sbs.send_gui_slider(clientObj.clientID, "", f"{panelID}-density", density, "low:1; high: 1000", xpos, ypos, xpos + 30, ypos + 3)
-                xpos += 20
-                ypos += 5
-                GUI.ToggleButton(clientObj.clientID, "", f"{panelID}-CreateTerrain", xpos + 0.5, ypos, 9.5, 3, text="Generate", togglecolour="green", font="smallest")
+                ypos += 4
+                if selectedTerrain in ["nebulas", "asteroids"]:
+                    colour1 = "#ff3300"
+                    colour2 = "#ff3300"
+                    startendpoint = data.get("StartEndPoint")
+                    if startendpoint == "StartPoint":
+                        colour1 = "#006600"
+                    elif startendpoint == "EndPoint":
+                        colour2 = "#006600"
+                    GUI.ToggleButton(clientObj.clientID, "", f"{panelID}-StartPoint", xpos + 0.5, ypos, 9.5, 3, text="Start", togglecolour=colour1, font="smallest")
+                    xpos += 10
+                    GUI.ToggleButton(clientObj.clientID, "", f"{panelID}-EndPoint", xpos + 0.5, ypos, 9.5, 3, text="End", togglecolour=colour2, font="smallest")
+                    xpos += 11
+                    xpos = position[0] + 1
+                    scatter = data.get("scatter")
+                    ypos += 5
+                    sbs.send_gui_text(clientObj.clientID, "", f"{panelID}-scatterTitle", f"text:Scatter {scatter}; font: gui-1", xpos, ypos, xpos + 30, ypos + 3)
+                    ypos += 3
+                    sbs.send_gui_slider(clientObj.clientID, "", f"{panelID}-scatter", scatter, "low:1000; high: 10000", xpos, ypos, xpos + 30, ypos + 3)
+                    density = data.get("density")
+                    ypos += 5
+                    sbs.send_gui_text(clientObj.clientID, "", f"{panelID}-densityTitle", f"text:Density {density}; font: gui-1", xpos, ypos, xpos + 30, ypos + 3)
+                    ypos += 3
+                    sbs.send_gui_slider(clientObj.clientID, "", f"{panelID}-density", density, "low:2; high: 200", xpos, ypos, xpos + 30, ypos + 3)
+                    xpos += 20
+                    ypos += 5
+                    GUI.ToggleButton(clientObj.clientID, "", f"{panelID}-CreateTerrain", xpos + 0.5, ypos, 9.5, 3, text="Generate", togglecolour="green", font="smallest")
+            case 2:
+                pass
+            case _:
+                pass
+
 
     @staticmethod
     def StationSpawnPanel(panelID, panelName, clientObj, position, wh, pageNo, data):
@@ -1181,54 +1202,13 @@ class GMSelectionPanels: #the panels displayed when a GM selects an object
             case 1:
                 output = ""
                 height = 6
-                sbs.send_gui_text(clientObj.clientID, "", f"{panelID}-fieldID", f"text: Field ID - {data.get('FieldID')}; font: gui-1", xpos + 5, ypos + 5, xpos + w, ypos + 10)
-                startendpoint = data.get("StartEndPoint")
-                """xpos += 1
-                ypos += 5
-                if startendpoint == "StartPoint":
-                    colour1 = "#006600"
-                    colour2 = "#ff3300"
-                else:
-                    colour1 = "#ff3300"
-                    colour2 = "#006600"
-                GUI.ToggleButton(clientObj.clientID, "", f"{panelID}-StartPoint", xpos + 0.5, ypos, 9.5, 3,
-                                 text="Start", togglecolour=colour1, font="smallest")
-                xpos += 10
-                GUI.ToggleButton(clientObj.clientID, "", f"{panelID}-EndPoint", xpos + 0.5, ypos, 9.5, 3, text="End",
-                                 togglecolour=colour2, font="smallest")
-                xpos += 11
-                terrainList = "Nebulae^Asteroids"
-                selectedTerrain = data.get("TerrainType")
-                sbs.send_gui_dropdown(clientObj.clientID, "", f"{panelID}-TerrainType",
-                                      f"text: Terrain Type; font: gui-1; list:{terrainList}", xpos, ypos, xpos + 10,
-                                      ypos + 3)
-
-                xpos = position[0] + 1
-                ypos += 5
-                sbs.send_gui_text(clientObj.clientID, "", f"{panelID}-terrainTitle",
-                                  f"text:Selected Terrain - {selectedTerrain}; font: gui-1", xpos, ypos, xpos + 30,
-                                  ypos + 3)
-                scatter = data.get("Scatter")
-                ypos += 5
-                sbs.send_gui_text(clientObj.clientID, "", f"{panelID}-scatterTitle",
-                                  f"text:Scatter {scatter}; font: gui-1", xpos, ypos, xpos + 30, ypos + 3)
-                ypos += 3
-                sbs.send_gui_slider(clientObj.clientID, "", f"{panelID}-scatter", scatter, "low:1000; high: 10000",
-                                    xpos, ypos, xpos + 30, ypos + 3)
-                density = data.get("Density")
-                ypos += 5
-                sbs.send_gui_text(clientObj.clientID, "", f"{panelID}-densityTitle",
-                                  f"text:Density {density}; font: gui-1", xpos, ypos, xpos + 30, ypos + 3)
-                ypos += 3
-                sbs.send_gui_slider(clientObj.clientID, "", f"{panelID}-density", density, "low:1; high: 1000", xpos,
-                                    ypos, xpos + 30, ypos + 3)
-                xpos += 20
-                ypos += 5
-                GUI.ToggleButton(clientObj.clientID, "", f"{panelID}-CreateTerrain", xpos + 0.5, ypos, 9.5, 3,
-                                 text="Generate", togglecolour="green", font="smallest")"""
-
-                sbs.send_gui_button(clientObj.clientID, "", f"{panelID}-rebuildField", f"text: Rebuild; font: gui-1", xpos + w - 15, ypos + 43, xpos + w - 1, ypos + 46)
-                sbs.send_gui_button(clientObj.clientID, "", f"{panelID}-deleteField", f"text: Delete Field; font: gui-1", xpos + w - 15, ypos + 48, xpos + w - 1, ypos + 51)
+                if data.get("FieldID"):
+                    sbs.send_gui_text(clientObj.clientID, "", f"{panelID}-fieldID", f"text: Field ID - {data.get('FieldID')}; font: gui-1", xpos + 5, ypos + 5, xpos + w, ypos + 10)
+                    startendpoint = data.get("StartEndPoint")
+                    sbs.send_gui_button(clientObj.clientID, "", f"{panelID}-rebuildField", f"text: Rebuild; font: gui-1", xpos + w - 15, ypos + 43, xpos + w - 1, ypos + 46)
+                    sbs.send_gui_button(clientObj.clientID, "", f"{panelID}-deleteField", f"text: Delete Field; font: gui-1", xpos + w - 15, ypos + 48, xpos + w - 1, ypos + 51)
+                elif data.get("TerrainID"):
+                    sbs.send_gui_button(clientObj.clientID, "", f"{panelID}-deleteTerrain", f"text: Delete Terrain; font: gui-1", xpos + w - 15, ypos + 48, xpos + w - 1, ypos + 51)
             case 2:
                 pass
 
@@ -1255,14 +1235,17 @@ class PanelTriggers:
             #sbs_tools.crenderID(event.client_id, ClientNEW.activeClients, "")
             return True
         if "-TerrainType" in event.sub_tag:
-            data.update({"type": event.value_tag})
-            if event.value_tag == "asteroids":
+            terrainType = event.sub_tag.split("-")[2]
+            data.update({"type": terrainType})
+            if terrainType == "asteroids":
                 data.update({"composition": ["Ast. Std Rand"]})
-            if event.value_tag == "nebulas":
+            if terrainType == "nebulas":
+                data.update({"composition": []})
+            if terrainType == "blackhole":
                 data.update({"composition": []})
             #sbs_tools.crenderID(event.client_id, ClientNEW.activeClients, "")
             return True
-        if "-CreateTerrain" in event.sub_tag and data.get("SNavID") > 0 and data.get("ENavID") > 0:
+        if "-CreateTerrain" in event.sub_tag and data.get("SNavID") > 0 and data.get("ENavID") > 0 and data.get('type') in ["nebulas", "asteroids"]:
             start = data.get("start")
             end = data.get("end")
             density = data.get("density")
@@ -1331,6 +1314,28 @@ class PanelTriggers:
                     killList.append(markerObj)
             for markerObj in killList:
                 TerrainHandling.sensorMarkers.remove(markerObj)
+
+            data.clear()
+
+            for GM, GMObj in SpaceObjects.activeGameMasters.items():
+                GMObj.ObjectData.set("science_target_UID", -1, 0)
+                moveSystems = GMObj.shipSystems.get("Movement")
+                moveSystems.selectedObj = -1
+            sbs_tools.crenderID(event.client_id, ClientNEW.activeClients, "")
+            return True
+        if "-deleteTerrain" in event.sub_tag:
+            ObjectID = data.get("TerrainID")
+            sbs.delete_object(ObjectID)
+            terrainIDs = TerrainHandling.blackholeIDs
+            terrainIDs.remove(ObjectID)
+
+            data.clear()
+
+            for GM, GMObj in SpaceObjects.activeGameMasters.items():
+                GMObj.ObjectData.set("science_target_UID", -1, 0)
+                moveSystems = GMObj.shipSystems.get("Movement")
+                moveSystems.selectedObj = -1
+            sbs_tools.crenderID(event.client_id, ClientNEW.activeClients, "")
             return True
 
     @staticmethod
@@ -1947,9 +1952,12 @@ class GMGlobalFunctions:
             elif data.get("JumpPointSpawn"):
                 data.update({"SpawnCoordinate": (round(event.source_point.x), round(event.source_point.y), round(event.source_point.z))})
                 GMGlobalFunctions.SpawnJumpPoint(data, event=event)
-            elif data.get("Terrain"):
+            elif data.get("Terrain") and data.get("type") in ["nebulas", "asteroids"]:
                 coord = (round(event.source_point.x), round(event.source_point.y), round(event.source_point.z))
                 GMGlobalFunctions.TerrainPoint(data, coord=coord)
+            elif data.get("Terrain") and data.get("type") in ["blackhole"]:
+                coord = (round(event.source_point.x), round(event.source_point.y), round(event.source_point.z))
+                GMGlobalFunctions.SpawnBlackhole(data, coord=coord)
             else:
                 #data.clear()
                 return True
@@ -2054,7 +2062,7 @@ class GMGlobalFunctions:
         if name in CrewData.teams.keys():
             newTeam = SpaceObjects.Team(name, "Space")
             newObj = ObjRef(newTeam, position=coordinate)
-        elif name in ["Comms Relay", "Sensor Buoy"]:
+        elif name in ["Comms Relay", "Sensor Buoy", "Sensor Relay"]:
             newObj = ObjRef(position=coordinate)
         else:
             newObj = ObjRef(position=coordinate, cargotype=name)
@@ -2136,4 +2144,10 @@ class GMGlobalFunctions:
                 data.update({"ENavID": newNav})
                 data.update({"StartEndPoint": "StartPoint"})
 
-
+    @staticmethod
+    def SpawnBlackhole(data, **kwargs):
+        coord = (0, 0, 0)
+        if "coord" in kwargs:
+            coord = kwargs.get("coord")
+        newBlackhole = TerrainTypes.AddBlackHole(simulation.simul, "Blackhole", coord)
+        TerrainHandling.blackholeIDs.append(newBlackhole)

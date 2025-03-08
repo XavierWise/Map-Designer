@@ -19,6 +19,14 @@ def random_quaternion():
 class OtherObject(SpaceObjects.SimulationObject):
     def __init__(self, name, behav, hull, side, **kwargs):
         super().__init__(name, behav, hull, side, **kwargs)
+        self.setFaction()
+
+    def setFaction(self):
+        self.Faction = None
+        for key, value in tsn_databases.factions.items():
+            if self.ObjectSide in value:
+                self.Faction = key
+                break
 
     def SpawnObject(self, sim, **kwargs):
         super().SpawnObject(sim, **kwargs)
@@ -65,6 +73,57 @@ class OtherObject(SpaceObjects.SimulationObject):
         objcoordinate = (self.Object.pos.x, self.Object.pos.y, self.Object.pos.z)
         actualcoordinate = (int(objcoordinate[0] + relativecoordinate[0]), 0, int(objcoordinate[2] + relativecoordinate[2]))
         return actualcoordinate
+
+
+class SensorRelay(OtherObject):
+    def __init__(self, **kwargs):
+        super().__init__("Sensor Relay", "behav_relay", "danger_4a", "USFP", **kwargs)
+        self.scandistance = 50000
+        self.ScanSources = set()
+        self.scanPulse = 0
+        self.scanPulseDelay = 1
+
+    def SpawnObject(self, sim, **kwargs):
+        super().SpawnObject(sim, **kwargs)
+        self.ScanArea()
+        self.scanPulse = sbs.app_minutes() + self.scanPulseDelay
+        self.ObjectData.set("name_tag", self.ObjectName, 0)
+
+    def ObjectTickMonitors(self):
+        if sbs.app_minutes() >= self.scanPulse:
+            self.ScanArea()
+            self.scanPulse = sbs.app_minutes() + self.scanPulseDelay
+            print("Relays scanned")
+
+    def ScanArea(self):
+        objectIDs = []
+        allObjects = SpaceObjects.activeNPCs | SpaceObjects.activeStations | SpaceObjects.activeShips | SpaceObjects.activeObjects | SpaceObjects.activeJumpPoints
+        for ping in sbs.broad_test(-self.scandistance + self.Object.pos.x, -self.scandistance + self.Object.pos.z, self.scandistance + self.Object.pos.x, self.scandistance + self.Object.pos.z, 0xfff0):
+            if ping.unique_ID != self.ObjectID:
+                if allObjects.get(ping.unique_ID):
+                    objectIDs.append(ping.unique_ID)
+                if ping.tick_type == "behav_relay":
+                    objectIDs.append(ping.unique_ID)
+                if ping.tick_type == "behav_jumpnode":
+                    objectIDs.append(ping.unique_ID)
+
+        killList = []
+        for recordedID in self.ScanSources:
+            if recordedID not in objectIDs:
+                killList.append(recordedID)
+        for killID in killList:
+            self.ScanSources.remove(killID)
+
+        for scannedID in objectIDs:
+            scannedObject = allObjects.get(scannedID)
+            if scannedObject.Faction == self.Faction or scannedObject.ObjectSide == self.ObjectSide:
+                self.ScanSources.add(scannedObject.ObjectID)
+
+        myIndex = 0
+        for sourceID in self.ScanSources:
+            self.ObjectData.set("extra_scan_source", sourceID, myIndex)
+            self.ObjectData.set("num_extra_scan_sources", myIndex + 1, 0)
+            myIndex += 1
 
 
 class SensorBuoy(OtherObject):

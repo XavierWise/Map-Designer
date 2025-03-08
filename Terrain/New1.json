@@ -6,5 +6,51 @@
      ],
      "systemalignment":"USFP",
      "objects":{},
-     "terrain":{}
+     "terrain":{
+          "2139259522304":{
+               "type":"asteroids",
+               "seed":2010,
+               "start":[
+                    -2484,
+                    0,
+                    -2327
+               ],
+               "end":[
+                    -654,
+                    0,
+                    -758
+               ],
+               "density":131,
+               "scatter":2173,
+               "composition":[
+                    "Ast. Std Rand"
+               ]
+          },
+          "2139259666560":{
+               "type":"nebulas",
+               "seed":2010,
+               "start":[
+                    52,
+                    0,
+                    3817
+               ],
+               "end":[
+                    3503,
+                    0,
+                    1490
+               ],
+               "density":131,
+               "scatter":2173,
+               "composition":[]
+          },
+          "4611686018427388221":{
+               "type":"blackhole",
+               "name":"Blackhole",
+               "coordinate":[
+                    -2484.0,
+                    0.0,
+                    1542.0
+               ]
+          }
+     }
 }
